@@ -24,7 +24,9 @@ class TripsController < ApplicationController
   # POST /trips
   # POST /trips.json
   def create
-    @trip = Trip.new(trip_params)
+    @trip = Trip.new#(trip_params)
+    
+    @trip.import_csv(params['trip']['uploadfile'])
 
     respond_to do |format|
       if @trip.save
