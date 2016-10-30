@@ -11,8 +11,11 @@
     </div>
   <% end %>
 
+  <div class="upload_field">
   <%= f.label :Trip_File %> 
-  <%= f.file_field() %>
+  <%= f.file_field(:uploadfile) %>
+  </div>
+  <br>
   <div class="actions">
     <%= f.submit :Upload_Data %>
   </div>

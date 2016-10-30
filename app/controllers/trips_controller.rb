@@ -24,12 +24,12 @@ class TripsController < ApplicationController
   # POST /trips
   # POST /trips.json
   def create
-    @trip = Trip.new#(trip_params)
-    
-    @trip.import_csv(params['trip']['uploadfile'])
+    @trip = Trip.new#(trip_params)    
 
     respond_to do |format|
-      if @trip.save
+      if @trip.save && get_distance
+        #The trip must be saved to create the position-records, so they are being added here
+        
         format.html { redirect_to @trip, notice: 'Trip was successfully created.' }
         format.json { render :show, status: :created, location: @trip }
       else
@@ -43,7 +43,9 @@ class TripsController < ApplicationController
   # PATCH/PUT /trips/1.json
   def update
     respond_to do |format|
-      if @trip.update(trip_params)
+      if @trip.update(trip_params) && get_distance
+        #It is assumed that additionaly position-data is uploaded.
+        #If not, then we should check whether that has happened before running get_distance as this involved Google API calls
         format.html { redirect_to @trip, notice: 'Trip was successfully updated.' }
         format.json { render :show, status: :ok, location: @trip }
       else
@@ -58,7 +60,7 @@ class TripsController < ApplicationController
   def destroy
     @trip.destroy
     respond_to do |format|
-      format.html { redirect_to trips_url, notice: 'Trip was successfully destroyed.' }
+      format.html { redirect_to trips_url, notice: 'Trip was successfully deleted.' }
       format.json { head :no_content }
     end
   end
@@ -72,5 +74,25 @@ class TripsController < ApplicationController
     # Never trust parameters from the scary internet, only allow the white list through.
     def trip_params
       params.fetch(:trip, {})
+    end
+    
+    def get_distance
+      if params['trip'] && params['trip']['uploadfile'] then
+        begin
+          @trip.import_csv(params['trip']['uploadfile'])
+          @trip.get_google_data
+        #rescue
+        #  @trip.errors[:base] << "File Format error."
+        #  return false
+        end
+        return true
+        #The trip must be re-saved with the distance
+      elsif !@trip.distance        
+        @trip.destroy
+        @trip.errors[:base] << "Distance could not be calculated! Upload data-file."
+        return false
+        #but should not be kept if the distance could not be recorded
+        #This would be done with a validation, but then the original saving would fail
+      end
     end
 end

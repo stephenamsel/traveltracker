@@ -4,7 +4,7 @@ class CreatePositions < ActiveRecord::Migration[5.0]
       t.float :latitude
       t.float :longitude
       t.datetime :timestamp
-      t.reference :trip
+      t.references :trip
 
       t.timestamps
     end
