@@ -10,6 +10,7 @@ class TripsController < ApplicationController
   # GET /trips/1
   # GET /trips/1.json
   def show
+    redirect_to trips_path
   end
 
   # GET /trips/new
@@ -30,7 +31,7 @@ class TripsController < ApplicationController
       if @trip.save && get_distance
         #The trip must be saved to create the position-records, so they are being added here
         
-        format.html { redirect_to @trip, notice: 'Trip was successfully created.' }
+        format.html { redirect_to trips_path, notice: 'Trip was successfully created.' }
         format.json { render :show, status: :created, location: @trip }
       else
         format.html { render :new }
@@ -60,7 +61,7 @@ class TripsController < ApplicationController
   def destroy
     @trip.destroy
     respond_to do |format|
-      format.html { redirect_to trips_url, notice: 'Trip was successfully deleted.' }
+      format.html { redirect_to @trip, notice: 'Trip was successfully deleted.' }
       format.json { head :no_content }
     end
   end
@@ -92,7 +93,12 @@ class TripsController < ApplicationController
         @trip.errors[:base] << "Distance could not be calculated! Upload data-file."
         return false
         #but should not be kept if the distance could not be recorded
-        #This would be done with a validation, but then the original saving would fail
+        #This would be done with a validation, but then the original saving, needed to get the positions associated properly, would fail
+        
+      else #It's an update not involving the distance
+        #With nothing else being tracked yet, that means no changes were made, which is probably an error
+        @trip.errors[:base] << "No changes made. Did you mean to do something?"
+        return true
       end
     end
 end

@@ -56,7 +56,6 @@ class Trip < ApplicationRecord
         distance += data['rows'][0]['elements'][0]['distance']['value'].to_f 
         
       end
-      byebug
       self.update_attribute(:distance, distance.to_f) #distance in m
   end
 end
